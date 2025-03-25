@@ -34,6 +34,7 @@ urlpatterns = [
 
     path('basket', BasketView.as_view(), name='basket'),
     path('order', OrderView.as_view(), name='order'),
+    path('auth/', include('social_django.urls', namespace='social')),
 
     path('', include(router.urls)),
 

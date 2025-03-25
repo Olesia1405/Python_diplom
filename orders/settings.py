@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django_rest_passwordreset',
     'drf_spectacular',
 
-    'backend.apps.BackendConfig'
+    'backend.apps.BackendConfig',
+    'social_django',
 ]
 
 
@@ -50,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
 
 ROOT_URLCONF = 'orders.urls'
@@ -65,6 +67,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -131,7 +135,12 @@ EMAIL_PORT = '465'
 SERVER_EMAIL = EMAIL_HOST_USER
 
 
-AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.AllowAllUsersModelBackend']
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.AllowAllUsersModelBackend',
+    'social_core.backends.yandex.YandexOAuth2',
+    'social_core.backends.vk.VKOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -175,9 +184,34 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
+SOCIAL_AUTH_YANDEX_OAUTH2_KEY = os.getenv('YANDEX_OAUTH2_KEY')
+SOCIAL_AUTH_YANDEX_OAUTH2_SECRET = os.getenv('YANDEX_OAUTH2_SECRET')
+SOCIAL_AUTH_VK_OAUTH2_KEY = os.getenv('VK_OAUTH2_KEY')
+SOCIAL_AUTH_VK_OAUTH2_SECRET = os.getenv('VK_OAUTH2_SECRET')
+
+SOCIAL_AUTH_YANDEX_OAUTH2_SCOPE = ['login:email', 'login:info', 'login:avatar']
+SOCIAL_AUTH_VK_OAUTH2_SCOPE = ['login:email', 'login:info']
+
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+    'backend.pipeline.save_profile_picture',
+)
+
+
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Python diplom',
     'DESCRIPTION': 'Python diplom',
     'VERSION': '1.0.0'
 }
+
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'

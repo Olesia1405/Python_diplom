@@ -22,6 +22,7 @@ USER_TYPE_CHOICES = (
 )
 
 
+
 class UserManager(BaseUserManager):
     """
     Миксин для управления пользователями
@@ -95,6 +96,11 @@ class User(AbstractUser):
         verbose_name = 'User'
         verbose_name_plural = "User list"
         ordering = ('email',)
+
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    avatar_url = models.URLField(blank=True, null=True)
 
 
 class Shop(models.Model):

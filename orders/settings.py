@@ -39,6 +39,7 @@ INSTALLED_APPS = [
 
     'backend.apps.BackendConfig',
     'social_django',
+    'easy_thumbnails',
 ]
 
 

@@ -1,7 +1,8 @@
 from celery import shared_task
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
-
+from easy_thumbnails.files import get_thumbnailer
+from django.core.files.storage import default_storage
 from backend.models import ConfirmEmailToken, User
 
 
@@ -43,3 +44,15 @@ def new_order(user_id):
         [user.email]
     )
     msg.send()
+
+@shared_task
+def generate_thumbnails(image_path, sizes):
+    thumbnailer = get_thumbnailer(default_storage.open(image_path))
+    for alias, size in sizes.items():
+        thumbnail = thumbnailer.get_thumbnail({
+            'size': size,
+            'crop': True,
+        })
+        thumbnail_path = f"{image_path}_{alias}.jpg"
+        with default_storage.open(thumbnail_path, 'wb') as f:
+            thumbnail.save(f)

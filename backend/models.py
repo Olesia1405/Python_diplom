@@ -4,6 +4,7 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_rest_passwordreset.tokens import get_token_generator
+from .tasks import generate_thumbnails
 
 STATE_CHOICES = (
     ('basket', 'Статус корзины'),
@@ -138,6 +139,11 @@ class Product(models.Model):
     name = models.CharField(max_length=80, verbose_name='Название')
     category = models.ForeignKey(Category, verbose_name='Категория', related_name='products', blank=True,
                                  on_delete=models.CASCADE)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Вызов задачи Celery для создания миниатюр
+        generate_thumbnails.delay(self.image.path, {'small': (100, 100), 'medium': (200, 200)})
 
     class Meta:
         verbose_name = 'Продукт'

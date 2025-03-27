@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate
 from django.db import IntegrityError
 from django.db.models import Q, Sum, F
+from django.shortcuts import render
 
 from rest_framework import viewsets, generics,  status
 from rest_framework.authtoken.models import Token
@@ -22,6 +23,10 @@ from backend.serializers import UserSerializer, CategorySerializer, ShopSerializ
 from backend.tasks import new_user_registered, new_order
 
 from drf_spectacular.utils import extend_schema
+
+import rollbar
+from cachalot.decorators import cachalot
+
 
 
 def str_to_bool(value):
@@ -571,3 +576,20 @@ class OrderView(APIView):
 
         return Response({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'},
                         status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class TestErrorView(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            # Вызов исключения для тестирования
+            raise ValueError("Это тестовое исключение для проверки Rollbar")
+        except ValueError as e:
+            # Логирование исключения в Rollbar
+            rollbar.report_exc_info()
+            return Response({"status": "error", "message": str(e)}, status=500)
+
+@cachalot(timeout=60 * 15)  # Кэшировать результат на 15 минут
+def product_list(request):
+    products = Product.objects.all()
+    return render(request, 'product_list.html', {'products': products})

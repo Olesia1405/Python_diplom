@@ -4,7 +4,7 @@ from rest_framework.routers import DefaultRouter
 
 from backend import views
 from backend.views import PartnerUpdate, RegisterAccount, ConfirmAccount, LoginAccount, AccountDetails, CategoryView, \
-    ShopView, ProductInfoViewSet, BasketView, PartnerState, PartnerOrders, ContactView, OrderView
+    ShopView, ProductInfoViewSet, BasketView, PartnerState, PartnerOrders, ContactView, OrderView, TestErrorView
 from drf_spectacular.views import SpectacularAPIView
 
 
@@ -35,6 +35,7 @@ urlpatterns = [
     path('basket', BasketView.as_view(), name='basket'),
     path('order', OrderView.as_view(), name='order'),
     path('auth/', include('social_django.urls', namespace='social')),
+    path('test-error/', TestErrorView.as_view(), name='test-error'),
 
     path('', include(router.urls)),
 
